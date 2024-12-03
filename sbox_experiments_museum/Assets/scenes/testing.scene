@@ -145,7 +145,14 @@
           "AngularDamping": 0,
           "Gravity": true,
           "LinearDamping": 0,
-          "Locking": {},
+          "Locking": {
+            "X": false,
+            "Y": false,
+            "Z": false,
+            "Pitch": false,
+            "Yaw": false,
+            "Roll": false
+          },
           "MassCenterOverride": "0,0,0",
           "MassOverride": 0,
           "MotionEnabled": true,
@@ -195,7 +202,14 @@
           "AngularDamping": 0,
           "Gravity": true,
           "LinearDamping": 0,
-          "Locking": {},
+          "Locking": {
+            "X": false,
+            "Y": false,
+            "Z": false,
+            "Pitch": false,
+            "Yaw": false,
+            "Roll": false
+          },
           "MassCenterOverride": "0,0,0",
           "MassOverride": 0,
           "MotionEnabled": true,
@@ -245,7 +259,14 @@
           "AngularDamping": 0,
           "Gravity": true,
           "LinearDamping": 0,
-          "Locking": {},
+          "Locking": {
+            "X": false,
+            "Y": false,
+            "Z": false,
+            "Pitch": false,
+            "Yaw": false,
+            "Roll": false
+          },
           "MassCenterOverride": "0,0,0",
           "MassOverride": 0,
           "MotionEnabled": true,
@@ -265,6 +286,10 @@
         {
           "__type": "ShrimpleCharacterController.ShrimpleWalker",
           "__guid": "4af1eed7-c726-4312-9a70-6187189f60b2",
+          "Camera": {
+            "_type": "gameobject",
+            "go": "cf0f2d3d-9d92-4e9c-99a0-424937c0b4eb"
+          },
           "DuckSpeed": 50,
           "JumpStrength": 350,
           "RunSpeed": 300,
@@ -306,6 +331,38 @@
           "UseSceneGravity": true,
           "WallTolerance": 1
         }
+      ],
+      "Children": [
+        {
+          "__guid": "cf0f2d3d-9d92-4e9c-99a0-424937c0b4eb",
+          "Flags": 0,
+          "Name": "Object",
+          "Enabled": true,
+          "Components": [
+            {
+              "__type": "Sandbox.CameraComponent",
+              "__guid": "d251ca11-b7a5-49cb-b804-7bb8379f8a11",
+              "BackgroundColor": "0.33333,0.46275,0.52157,1",
+              "ClearFlags": "All",
+              "FieldOfView": 60,
+              "IsMainCamera": true,
+              "Orthographic": false,
+              "OrthographicHeight": 1204,
+              "Priority": 1,
+              "RenderExcludeTags": "",
+              "RenderTags": "",
+              "TargetEye": "None",
+              "Viewport": "0,0,1,1",
+              "ZFar": 10000,
+              "ZNear": 10
+            },
+            {
+              "__type": "PostProcessPlayground",
+              "__guid": "bce7a41e-f913-474d-a27d-a56cd15e47ef",
+              "Color": "0,0,0,0"
+            }
+          ]
+        }
       ]
     }
   ],
@@ -338,6 +395,5 @@
   "Title": "minimal",
   "Description": null,
   "__references": [],
-  "HasUnsavedChanges": false,
   "__version": 2
 }

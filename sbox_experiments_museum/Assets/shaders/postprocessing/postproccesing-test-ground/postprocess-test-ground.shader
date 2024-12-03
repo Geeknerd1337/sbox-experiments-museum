@@ -1,54 +1,81 @@
-// Ideally you wouldn't need half these includes for an unlit shader
-// But it's stupiod
+
+MODES
+{
+    Default();
+    VrForward();
+}
+
 
 FEATURES
 {
-    #include "common/features.hlsl"
 }
 
 COMMON
 {
-	#include "common/shared.hlsl"
-}
+    #include "postprocess/shared.hlsl"
+};
+
 
 struct VertexInput
 {
-	#include "common/vertexinput.hlsl"
+    float3 vPositionOs : POSITION < Semantic( PosXyz ); >;
+    float2 vTexCoord : TEXCOORD0 < Semantic( LowPrecisionUv ); >;
 };
 
 struct PixelInput
 {
-	#include "common/pixelinput.hlsl"
+    float2 vTexCoord : TEXCOORD0;
+
+	#if ( PROGRAM == VFX_PROGRAM_VS )
+		float4 vPositionPs		: SV_Position;
+	#endif
+
+	#if ( ( PROGRAM == VFX_PROGRAM_PS ) )
+		float4 vPositionSs		: SV_Position;
+	#endif
 };
 
 VS
 {
-	#include "common/vertex.hlsl"
-
-	PixelInput MainVs( VertexInput i )
-	{
-		PixelInput o = ProcessVertex( i );
-		// Add your vertex manipulation functions here
-		return FinalizeVertex( o );
-	}
+	
+    PixelInput MainVs( VertexInput i )
+    {
+        PixelInput o;
+        
+        o.vPositionPs = float4( i.vPositionOs.xy, 0.0f, 1.0f );
+        o.vTexCoord = i.vTexCoord;
+        return o;
+    }
 }
 
 PS
 {
-    #include "common/pixel.hlsl"
+    #include "postprocess/common.hlsl"
+    #include "postprocess/functions.hlsl"
+    #include "procedural.hlsl"
 
-	RenderState( DepthWriteEnable, false );
+    #include "common/classes/Depth.hlsl"
+
+    RenderState( DepthWriteEnable, false );
     RenderState( DepthEnable, false );
 
-    CreateTexture2D( g_tColorBuffer ) < Attribute( "ColorBuffer" );  	SrgbRead( true ); Filter( MIN_MAG_LINEAR_MIP_POINT ); AddressU( CLAMP ); AddressV( BORDER ); >;
-    CreateTexture2D( g_tDepthBuffer ) < Attribute( "DepthBuffer" ); 	SrgbRead( false ); Filter( MIN_MAG_MIP_POINT ); AddressU( CLAMP ); AddressV( BORDER ); >;
+	SamplerState MySampler < Filter( Point ); >;
+    SamplerState MySamplerDepth < Filter( Point ); >;
 
-	float4 MainPs( PixelInput i ) : SV_Target0
-	{
-		float2 vScreenUv = i.vPositionSs.xy / g_vRenderTargetSize;
+    // Passed framebuffer if you want to sample it
+    Texture2D g_tColorBuffer < Attribute( "ColorBuffer" ); SrgbRead( true ); >;
+    Texture2D g_tDepthBuffer < Attribute( "DepthBuffer" ); SrgbRead( false ); >;
+    //CreateTexture2D( g_tDepthBuffer ) < Attribute( "DepthBuffer" ); 	SrgbRead( false ); Filter( MIN_MAG_MIP_POINT ); AddressU( CLAMP ); AddressV( BORDER ); >;
+    float3 vMyColor < Attribute("mycolor"); >;
 
-		float4 color = Tex2D( g_tColorBuffer, vScreenUv.xy );
-		color.r = 0.0;
-		return color;
-	}
+    float4 MainPs( PixelInput i ) : SV_Target0
+    {
+
+        float2 vScreenUv = CalculateViewportUv( i.vPositionSs.xy );
+		float4 color = g_tColorBuffer.Sample( MySampler, i.vTexCoord );
+        float4 depth =g_tDepthBuffer.Sample( MySamplerDepth, vScreenUv );
+		float3 depth2 = Depth::GetWorldPosition(i.vTexCoord * g_vRenderTargetSize);
+        float distance = length( float3(0.0,0.0, 0.0) - depth2 );
+        return float4( 0.0, color.g, step( distance, 50.0f ), 1.0f );
+    }
 }

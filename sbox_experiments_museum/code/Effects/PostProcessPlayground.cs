@@ -1,6 +1,6 @@
-[Title("My Post Processing")]
-[Category("Post Processing")]
-[Icon("grain")]
+[Title( "Post Process Playground" )]
+[Category( "Post Processing" )]
+[Icon( "grain" )]
 public sealed class PostProcessPlayground : PostProcess, Component.ExecuteInEditor
 {
 	[Property] public Color Color { get; set; }
@@ -9,7 +9,7 @@ public sealed class PostProcessPlayground : PostProcess, Component.ExecuteInEdit
 
 	protected override void OnEnabled()
 	{
-		renderHook = Camera.AddHookBeforeOverlay("My Post Processing", 1000, RenderEffect);
+		renderHook = Camera.AddHookBeforeOverlay( "My Post Processing", 1000, RenderEffect );
 	}
 
 	protected override void OnDisabled()
@@ -20,18 +20,17 @@ public sealed class PostProcessPlayground : PostProcess, Component.ExecuteInEdit
 
 	RenderAttributes attributes = new RenderAttributes();
 
-	public void RenderEffect(SceneCamera camera)
+	public void RenderEffect( SceneCamera camera )
 	{
-		if (!camera.EnablePostProcessing)
+		if ( !camera.EnablePostProcessing )
 			return;
 
-		// Pass the Color property to the shader
-		attributes.Set("mycolor", Color);
-
 		// Pass the FrameBuffer to the shader
-		Graphics.GrabFrameTexture("ColorBuffer", attributes);
+		Graphics.GrabFrameTexture( "ColorBuffer", attributes );
+		Graphics.GrabDepthTexture( "DepthBuffer", attributes );
+
 
 		// Blit a quad across the entire screen with our custom shader
-		Graphics.Blit(Material.FromShader("shaders/mypostprocess.shader"), attributes);
+		Graphics.Blit( Material.Load( "materials/postprocessplayground.vmat" ), attributes );
 	}
 }

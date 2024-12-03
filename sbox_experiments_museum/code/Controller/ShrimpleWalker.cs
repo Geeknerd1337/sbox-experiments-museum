@@ -4,81 +4,83 @@ namespace ShrimpleCharacterController;
 
 public class ShrimpleWalker : Component
 {
-    [RequireComponent]
-    public ShrimpleCharacterController Controller { get; set; }
+	[RequireComponent]
+	public ShrimpleCharacterController Controller { get; set; }
 
 
-    public CitizenAnimationHelper AnimationHelper { get; set; }
-    public SkinnedModelRenderer Renderer { get; set; }
-    public GameObject Camera { get; set; }
+	public CitizenAnimationHelper AnimationHelper { get; set; }
+	public SkinnedModelRenderer Renderer { get; set; }
 
-    [Property]
-    [Range(50f, 200f, 10f)]
-    public float WalkSpeed { get; set; } = 100f;
+	[Property]
+	public GameObject Camera { get; set; }
 
-    [Property]
-    [Range(100f, 500f, 20f)]
-    public float RunSpeed { get; set; } = 300f;
+	[Property]
+	[Range( 50f, 200f, 10f )]
+	public float WalkSpeed { get; set; } = 100f;
 
-    [Property]
-    [Range(25f, 100f, 5f)]
-    public float DuckSpeed { get; set; } = 50f;
+	[Property]
+	[Range( 100f, 500f, 20f )]
+	public float RunSpeed { get; set; } = 300f;
 
-    [Property]
-    [Range(200f, 500f, 20f)]
-    public float JumpStrength { get; set; } = 350f;
+	[Property]
+	[Range( 25f, 100f, 5f )]
+	public float DuckSpeed { get; set; } = 50f;
 
-    public Angles EyeAngles { get; set; }
+	[Property]
+	[Range( 200f, 500f, 20f )]
+	public float JumpStrength { get; set; } = 350f;
 
-    protected override void OnStart()
-    {
-        base.OnStart();
+	public Angles EyeAngles { get; set; }
 
-        Renderer = Components.Get<SkinnedModelRenderer>(FindMode.EverythingInSelfAndDescendants);
-        Camera = new GameObject(true, "Camera");
-        Camera.SetParent(GameObject);
-        var cameraComponent = Camera.Components.Create<CameraComponent>();
-        cameraComponent.ZFar = 32768f;
-        cameraComponent.FieldOfView = 90f;
-    }
+	protected override void OnStart()
+	{
+		base.OnStart();
 
-    protected override void OnFixedUpdate()
-    {
-        base.OnFixedUpdate();
+		Renderer = Components.Get<SkinnedModelRenderer>( FindMode.EverythingInSelfAndDescendants );
+		//Camera = new GameObject(true, "Camera");
+		//Camera.SetParent(GameObject);
+		//var cameraComponent = Camera.Components.Create<CameraComponent>();
+		//cameraComponent.ZFar = 32768f;
+		//cameraComponent.FieldOfView = 90f;
+	}
 
-        var wishDirection = Input.AnalogMove.Normal * Rotation.FromYaw(EyeAngles.yaw);
-        var isDucking = Input.Down("Duck");
-        var isRunning = Input.Down("Run");
-        var wishSpeed = isDucking ? DuckSpeed :
-            isRunning ? RunSpeed : WalkSpeed;
+	protected override void OnFixedUpdate()
+	{
+		base.OnFixedUpdate();
 
-        Controller.WishVelocity = wishDirection * wishSpeed;
-        Controller.Move();
+		var wishDirection = Input.AnalogMove.Normal * Rotation.FromYaw( EyeAngles.yaw );
+		var isDucking = Input.Down( "Duck" );
+		var isRunning = Input.Down( "Run" );
+		var wishSpeed = isDucking ? DuckSpeed :
+			isRunning ? RunSpeed : WalkSpeed;
 
-        if (Input.Pressed("Jump") && Controller.IsOnGround)
-        {
-            Controller.Punch(Vector3.Up * JumpStrength);
-            AnimationHelper?.TriggerJump();
-        }
+		Controller.WishVelocity = wishDirection * wishSpeed;
+		Controller.Move();
 
-        if (!AnimationHelper.IsValid()) return;
+		if ( Input.Pressed( "Jump" ) && Controller.IsOnGround )
+		{
+			Controller.Punch( Vector3.Up * JumpStrength );
+			AnimationHelper?.TriggerJump();
+		}
 
-        AnimationHelper.WithWishVelocity(Controller.WishVelocity);
-        AnimationHelper.WithVelocity(Controller.Velocity);
-        AnimationHelper.DuckLevel = isDucking ? 1f : 0f;
-        AnimationHelper.IsGrounded = Controller.IsOnGround;
-    }
+		if ( !AnimationHelper.IsValid() ) return;
 
-    protected override void OnUpdate()
-    {
-        base.OnUpdate();
+		AnimationHelper.WithWishVelocity( Controller.WishVelocity );
+		AnimationHelper.WithVelocity( Controller.Velocity );
+		AnimationHelper.DuckLevel = isDucking ? 1f : 0f;
+		AnimationHelper.IsGrounded = Controller.IsOnGround;
+	}
 
-        EyeAngles += Input.AnalogLook;
-        EyeAngles = EyeAngles.WithPitch(MathX.Clamp(EyeAngles.pitch, -89f, 89f));
-        //Renderer.WorldRotation = Rotation.Slerp(Renderer.WorldRotation, Rotation.FromYaw(EyeAngles.yaw), Time.Delta * 5f);
+	protected override void OnUpdate()
+	{
+		base.OnUpdate();
 
-        var cameraOffset = Vector3.Up * 64f;
-        Camera.WorldRotation = EyeAngles.ToRotation();
-        Camera.LocalPosition = Vector3.Zero + cameraOffset;
-    }
+		EyeAngles += Input.AnalogLook;
+		EyeAngles = EyeAngles.WithPitch( MathX.Clamp( EyeAngles.pitch, -89f, 89f ) );
+		//Renderer.WorldRotation = Rotation.Slerp(Renderer.WorldRotation, Rotation.FromYaw(EyeAngles.yaw), Time.Delta * 5f);
+
+		var cameraOffset = Vector3.Up * 64f;
+		Camera.WorldRotation = EyeAngles.ToRotation();
+		Camera.LocalPosition = Vector3.Zero + cameraOffset;
+	}
 }
